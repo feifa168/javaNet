@@ -47,6 +47,7 @@ public class MyNIOServer {
             try {
                 int selNum = sel.select(2000);
                 if (0 == selNum) {
+                    System.out.println("select result is 0");
                     continue;
                 }
 
@@ -60,6 +61,8 @@ public class MyNIOServer {
                         handleAccept(key);
                     } else if (key.isReadable()) {
                         handleRead(key);
+                    } else if (key.isWritable()) {
+                        handleWrite(key);
                     }
                 }
                 keys.clear();
@@ -129,6 +132,18 @@ public class MyNIOServer {
         }
 
         return isok;
+    }
+
+    private boolean handleWrite(SelectionKey key) {
+        if (null != key) {
+            SocketChannel client = (SocketChannel) key.channel();
+            try {
+                System.out.println(client.getRemoteAddress().toString() + " write ok");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 
     public void handleWrite(ByteBuffer buff) {

@@ -65,6 +65,7 @@ public class MyNIOClient {
         while (run) {
             selNum = sel.select(2000);
             if (0 == selNum) {
+                System.out.println("select result is 0");
                 continue;
             }
             Set<SelectionKey> keys = sel.selectedKeys();
