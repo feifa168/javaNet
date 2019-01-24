@@ -17,18 +17,16 @@ public class FtAIOServer {
             this.clientChannel = clientChannel;
             running = true;
 
-            initBuf(defaultReadBufLen, defaultWriteBufLen);
+            initBuf(defaultReadBufLen);
         }
 
-        public void initBuf(int readBufLen, int writeBufLen) {
+        public void initBuf(int readBufLen) {
             this.readBufLen = readBufLen>defaultReadBufLen ? readBufLen : defaultReadBufLen;
-            this.writeBufLen = writeBufLen>defaultWriteBufLen ? writeBufLen : defaultWriteBufLen;
         }
 
         public void start() {
             running = true;
             readBuf = ByteBuffer.allocate(readBufLen);
-            writeBuf = ByteBuffer.allocate(writeBufLen);
 
             doRead();
         }
@@ -111,11 +109,8 @@ public class FtAIOServer {
         private boolean running;
 
         private ByteBuffer readBuf;
-        private ByteBuffer writeBuf;
         private int readBufLen;
-        private int writeBufLen;
         private static final int defaultReadBufLen = 1024;
-        private static final int defaultWriteBufLen = 1024;
     }
 
     static class ServerAcceptCompletionHandler<T extends AsynchronousSocketChannel, U> implements java.nio.channels.CompletionHandler<T, U> {
