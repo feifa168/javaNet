@@ -105,7 +105,7 @@ public class FtAIOClient {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                clientChannel.read(readBuf, readBuf, this);
+                //clientChannel.read(readBuf, readBuf, this);
             }
 
             @Override

@@ -80,7 +80,7 @@ public class FtAIOServer {
                         e.printStackTrace();
                     }
                     //doRead();
-                    clientChannel.read(readBuf, readBuf, this);
+                    //clientChannel.read(readBuf, readBuf, this);
                 }
 
                 @Override
@@ -113,17 +113,28 @@ public class FtAIOServer {
         private static final int defaultReadBufLen = 1024;
     }
 
-    static class ServerAcceptCompletionHandler<T extends AsynchronousSocketChannel, U> implements java.nio.channels.CompletionHandler<T, U> {
+    static class ServerAcceptCompletionHandler implements java.nio.channels.CompletionHandler<AsynchronousSocketChannel, Object> {
         public ServerAcceptCompletionHandler(FtAIOServer server) {
             this.server = server;
         }
 
         @Override
-        public void completed(T clientChannel, U attachment) {
+        public void completed(AsynchronousSocketChannel clientChannel, Object attachment) {
+            server.aioServerChannel.accept(null, this);
+
+            FtAIOClient client = new FtAIOClient(clientChannel);
+            server.clients.add(client);
+            try {
+                System.out.println("client from " + clientChannel.getRemoteAddress() + " is connected");
+                server.doRead(client);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
-        public void failed(Throwable exc, U attachment) {
+        public void failed(Throwable exc, Object attachment) {
+            System.out.println("client connect is fail, message is " + exc.getMessage());
         }
 
         private FtAIOServer server;
@@ -161,38 +172,7 @@ public class FtAIOServer {
             return;
         }
 
-        aioServerChannel.accept(this, new ServerAcceptCompletionHandler<>(this));
-
-        aioServerChannel.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
-            @Override
-            public void completed(AsynchronousSocketChannel clientChannel, Object attachment) {
-                //doAccept();
-                aioServerChannel.accept(null, this);
-
-                FtAIOClient client = new FtAIOClient(clientChannel);
-                clients.add(client);
-                try {
-                    System.out.println("client from " + clientChannel.getRemoteAddress() + " is connected");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-
-                doRead(client);
-
-                aioServerChannel.accept(null, this);
-            }
-
-            @Override
-            public void failed(Throwable exc, Object attachment) {
-                System.out.println("client connect is fail, message is " + exc.getMessage());
-            }
-        });
+        aioServerChannel.accept(null, new ServerAcceptCompletionHandler(this));
     }
 
     private void doRead(FtAIOClient client) {
