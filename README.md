@@ -16,6 +16,7 @@ javaNet适用于java网络编程，手写NIO服务端和客户端。客户端和
 * [关于NIO注册OP_WRITE状态的问题](https://bbs.csdn.net/topics/391817333)
 * [NIO就绪处理之OP_WRITE](https://blog.csdn.net/robinjwong/article/details/41912365)
 * [JDK Epoll空轮询bug](https://www.jianshu.com/p/3ec120ca46b2)
+* [nio SelectionKey.OP_WRITE 的问题](https://blog.csdn.net/qq_33245923/article/details/68063342)
 
 ## 依赖
 > 仅使用jdk1.8，没有使用第三方库。
