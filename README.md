@@ -1,5 +1,26 @@
 ## 简介
-javaNet适用于java网络编程，手写NIO服务端和客户端。客户端和服务端可以互相发送消息，服务端发送消息为发送给所有客户端。
+javaNet适用于java网络编程，手写NIO服务端和客户端，以及netty的使用。客户端和服务端可以互相发送消息，服务端发送消息为发送给所有客户端。
+
+## java命令行使用
+[java命令行执行程序解决依赖外部jar包的问题](https://www.cnblogs.com/wangxiaoha/p/6296154.html)
+```text
+java命令行执行程序解决依赖外部jar包的问题
+用java命令行直接执行程序，如果这个程序需要引用外部jar包。就不能单纯用java xx来执行
+
+如果你的jar包和程序就在一个目录：
+编译
+javac -cp D:\yy\yy.jar,D\xx\xx.jar com.my.test.java
+执行
+java -cp D:\yy\yy.jar,D\xx\xx.jar com.my.test
+但是往往我们依赖的包很多，要一个个填写估计就疯了。所有我们一般会把所有的外部依赖包都放在一个文件夹里，比如在D:\lib
+
+编译 
+javac -Djava.ext.dirs=D:\lib com.my.test.java
+执行
+java  -Djava.ext.dirs=D:\lib com.my.test
+这个方法需要在jdk1.6以上支持
+对于打包且依赖第三方库的class文件调试，命令行可以这么使用
+```
 
 ## 参考资料
 * [基于NIO的同步非阻塞编程完整案例](https://www.cnblogs.com/houzheng/p/9460450.html)
@@ -19,7 +40,8 @@ javaNet适用于java网络编程，手写NIO服务端和客户端。客户端和
 * [nio SelectionKey.OP_WRITE 的问题](https://blog.csdn.net/qq_33245923/article/details/68063342)
 
 ## 依赖
-> 仅使用jdk1.8，没有使用第三方库。
+> IO和NIO仅使用jdk1.8，没有使用第三方库。
+> httpserver和httpclient使用netty4.1.32
 
 ## 模块
 * MyNIOServer，用于NIO服务端
