@@ -1,5 +1,5 @@
 ## 简介
-javaNet适用于java网络编程，手写NIO服务端和客户端，以及netty的使用。客户端和服务端可以互相发送消息，服务端发送消息为发送给所有客户端。
+javaNet适用于java网络编程，手写NIO，AIO服务端和客户端，以及netty的使用。客户端和服务端可以互相发送消息，服务端发送消息为发送给所有客户端。
 
 ## java命令行使用
 [java命令行执行程序解决依赖外部jar包的问题](https://www.cnblogs.com/wangxiaoha/p/6296154.html)
