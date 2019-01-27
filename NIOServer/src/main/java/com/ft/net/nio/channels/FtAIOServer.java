@@ -13,8 +13,9 @@ import java.util.Set;
 
 public class FtAIOServer {
     static class FtAIOClient {
-        public FtAIOClient(AsynchronousSocketChannel clientChannel) {
+        public FtAIOClient(AsynchronousSocketChannel clientChannel, FtAIOServer server) {
             this.clientChannel = clientChannel;
+            this.server = server;
             running = true;
 
             initBuf(defaultReadBufLen);
@@ -44,7 +45,7 @@ public class FtAIOServer {
                 @Override
                 public void completed(Integer writeLen, ByteBuffer data) {
                     try {
-                        System.out.println("write to " + clientChannel.getRemoteAddress() + ", data is " + new String(data.array(), 0, data.limit()));
+                        System.out.println("write to " + clientChannel.getRemoteAddress() + ", write length is " + writeLen + ", data is " + new String(data.array(), 0, data.limit()));
                     } catch (IOException e) {
                         doEnd();
                         e.printStackTrace();
@@ -75,12 +76,14 @@ public class FtAIOServer {
                 public void completed(Integer readLen, ByteBuffer data) {
                     data.flip();
                     try {
-                        System.out.println("read from " + clientChannel.getRemoteAddress() + " len is " + readLen + ", data is " + new String(data.array(), 0, data.limit()));
+                        System.out.println("read from " + clientChannel.getRemoteAddress() + " read length is " + readLen + ", data is " + new String(data.array(), 0, data.limit()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    //doRead();
-                    //clientChannel.read(readBuf, readBuf, this);
+
+                    data.clear();
+                    clientChannel.read(readBuf, readBuf, this);
+
                 }
 
                 @Override
@@ -97,6 +100,7 @@ public class FtAIOServer {
 
         private void doEnd() {
             try {
+                server.doRemoveClient(this);
                 clientChannel.shutdownInput();
                 clientChannel.shutdownOutput();
                 clientChannel.close();
@@ -107,6 +111,7 @@ public class FtAIOServer {
 
         private AsynchronousSocketChannel clientChannel;
         private boolean running;
+        private FtAIOServer server;
 
         private ByteBuffer readBuf;
         private int readBufLen;
@@ -122,14 +127,10 @@ public class FtAIOServer {
         public void completed(AsynchronousSocketChannel clientChannel, Object attachment) {
             server.aioServerChannel.accept(null, this);
 
-            FtAIOClient client = new FtAIOClient(clientChannel);
-            server.clients.add(client);
-            try {
-                System.out.println("client from " + clientChannel.getRemoteAddress() + " is connected");
-                server.doRead(client);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            FtAIOClient client = new FtAIOClient(clientChannel, server);
+            client.start();
+
+            server.doAddClient(client);
         }
 
         @Override
@@ -167,11 +168,6 @@ public class FtAIOServer {
     }
 
     private void doAccept() {
-        if (!running) {
-            doEnd();
-            return;
-        }
-
         aioServerChannel.accept(null, new ServerAcceptCompletionHandler(this));
     }
 
@@ -188,6 +184,24 @@ public class FtAIOServer {
         client.stop();
         clients.remove(client);
     }
+    private void doAddClient(FtAIOClient client) {
+        clients.add(client);
+        try {
+            System.out.println("client from "+client.clientChannel.getRemoteAddress() + " is connected");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void doRemoveClient(FtAIOClient client) {
+        clients.remove(client);
+        try {
+            System.out.println("client from "+client.clientChannel.getRemoteAddress() + " is disconnected");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void doEnd() {
         clients.forEach(client->client.stop());
         clients.clear();

@@ -20,6 +20,7 @@ public class FtAIOClient {
 
     public void start() throws IOException {
         clientChannel = AsynchronousSocketChannel.open();
+        readBuf = ByteBuffer.allocate(readBufLen);
         running = true;
 
         doConnect();
@@ -37,9 +38,9 @@ public class FtAIOClient {
 
         clientChannel.write(buf, buf, new CompletionHandler<Integer, ByteBuffer>() {
             @Override
-            public void completed(Integer readLen, ByteBuffer data) {
+            public void completed(Integer writeLen, ByteBuffer data) {
                 try {
-                    System.out.println("read from " + clientChannel.getRemoteAddress() + ", read length is " + readLen + ", data is " + new String(data.array(), 0, data.limit()));
+                    System.out.println("write to " + clientChannel.getRemoteAddress() + ", write length is " + writeLen + ", data is " + new String(data.array(), 0, data.limit()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -48,7 +49,7 @@ public class FtAIOClient {
             @Override
             public void failed(Throwable exc, ByteBuffer data) {
                 try {
-                    System.out.println("read from " + clientChannel.getRemoteAddress() + " fail, message is " + exc.getMessage());
+                    System.out.println("write to " + clientChannel.getRemoteAddress() + " fail, message is " + exc.getMessage());
                 } catch (IOException e) {
                     doEnd();
                     e.printStackTrace();
@@ -63,11 +64,6 @@ public class FtAIOClient {
     }
 
     private void doConnect() {
-        if (!running) {
-            doEnd();
-            return;
-        }
-
         clientChannel.connect(new InetSocketAddress(host, port), this, new CompletionHandler<Void, FtAIOClient>() {
             @Override
             public void completed(Void result, FtAIOClient client) {
@@ -101,11 +97,14 @@ public class FtAIOClient {
             @Override
             public void completed(Integer readLen, ByteBuffer data) {
                 try {
+                    data.flip();
                     System.out.println("read from " + clientChannel.getRemoteAddress() + ", data is " + new String(data.array(), 0, data.limit()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                //clientChannel.read(readBuf, readBuf, this);
+
+                data.clear();
+                clientChannel.read(readBuf, readBuf, this);
             }
 
             @Override
